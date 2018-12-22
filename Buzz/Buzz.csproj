@@ -4,7 +4,14 @@
     <AzureFunctionsVersion>v2</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.13" />
+    <PackageReference Include="Microsoft.Azure.Management.Authorization" Version="2.9.0-preview" />
+    <PackageReference Include="Microsoft.Azure.Management.Compute" Version="23.2.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Compute.Fluent" Version="1.18.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.18.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="1.7.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
+    <PackageReference Include="Polly" Version="6.1.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview.18571.3" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
