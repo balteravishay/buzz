@@ -2,14 +2,23 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
 namespace Buzz.Extensions
 {
     /// <summary>
     /// Calls to Dutable Function activities and timers. 
     /// </summary>
-    public static class DurableContextExtensions
-    {        
+    static class DurableContextExtensions
+    {
+        public static IConfigurationRoot BuildConfiguration(this ExecutionContext context) =>
+            new ConfigurationBuilder()
+                .SetBasePath(context.FunctionAppDirectory)
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+
         public static Task WaitTask(this DurableOrchestrationContext @this, int waitTime) =>
             @this.CreateTimer(
                 DateTime.UtcNow.Add(TimeSpan.FromMinutes(waitTime)),

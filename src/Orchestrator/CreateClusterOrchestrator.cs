@@ -3,7 +3,6 @@ using Buzz.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Configuration;
 using System.Threading.Tasks;
 
 namespace Buzz.Orchestrator
@@ -17,10 +16,12 @@ namespace Buzz.Orchestrator
     {
         [FunctionName("CreateCluster")]
         public static async Task Run([OrchestrationTrigger]DurableOrchestrationContext context, 
-            ILogger log)
+            ILogger log, ExecutionContext executionContext)
         {
-            var vmsinScaleSet = int.Parse(ConfigurationManager.AppSettings["MaxVmsInScaleSet"]);
-            var waitTime = int.Parse(ConfigurationManager.AppSettings["WaitTime"]);
+            var config = executionContext.BuildConfiguration();
+
+            var vmsinScaleSet = int.Parse(config["MaxVmsInScaleSet"]);
+            var waitTime = int.Parse(config["WaitTime"]);
 
             var input = new {
                 Name = context.GetInput<Tuple<string, int>>().Item1,

@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using System.Linq;
 using Buzz.Extensions;
 using Buzz.Model;
@@ -14,15 +13,16 @@ namespace Buzz.Activity
         private static ILogger _log;
 
         [FunctionName("GetResourcesActivity")]
-        public static string[] Run([ActivityTrigger] DurableActivityContext context, ILogger log)
+        public static string[] Run([ActivityTrigger] DurableActivityContext context, ILogger log,
+            ExecutionContext executionContext)
         {
             _log = log;
             var input = new {Name = context.GetInput<string>()};
-            
-            var clientId = ConfigurationManager.AppSettings["ApplicationId"];
-            var clientSecret = ConfigurationManager.AppSettings["ApplicationSecret"];
-            var tenantId = ConfigurationManager.AppSettings["TenantId"];
-            string subscriptionId = ConfigurationManager.AppSettings["SubscriptionId"];
+            var config = executionContext.BuildConfiguration();
+            var clientId = config["ApplicationId"];
+            var clientSecret = config["ApplicationSecret"];
+            var tenantId = config["TenantId"];
+            string subscriptionId = config["SubscriptionId"];
             log.LogInformation($"GetGroupsActivity Activity function start process {input.Name}");
 
             try

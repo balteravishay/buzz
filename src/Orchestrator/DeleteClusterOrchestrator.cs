@@ -1,7 +1,6 @@
 using Buzz.Extensions;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using System.Configuration;
 using System.Threading.Tasks;
 
 namespace Buzz.Orchestrator
@@ -15,9 +14,10 @@ namespace Buzz.Orchestrator
     {
         [FunctionName("DeleteCluster")]
         public static async Task Run([OrchestrationTrigger]DurableOrchestrationContext context, 
-            ILogger log)
+            ILogger log, ExecutionContext executionContext)
         {
-            var waitTime = int.Parse(ConfigurationManager.AppSettings["WaitTime"]);
+            var config = executionContext.BuildConfiguration();
+            var waitTime = int.Parse(config["WaitTime"]);
             
             var input = new { Name = context.GetInput<string>() };
             log.LogInformation($"orchestrate delete cluster name {input.Name}");

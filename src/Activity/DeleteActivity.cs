@@ -2,7 +2,6 @@ using Buzz.Extensions;
 using Buzz.Model;
 using Microsoft.Azure.WebJobs;
 using System;
-using System.Configuration;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +12,8 @@ namespace Buzz.Activity
         private static ILogger _log;
 
         [FunctionName("DeleteActivity")]
-        public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log)
+        public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log,
+            ExecutionContext executionContext)
         {
             _log = log;
             var input = new
@@ -21,11 +21,11 @@ namespace Buzz.Activity
                 ResourceGroupName = context.GetInput<Tuple<string, string>>().Item1,
                 ResourcesName = context.GetInput<Tuple<string, string>>().Item2
             };
-            
-            var clientId = ConfigurationManager.AppSettings["ApplicationId"];
-            var clientSecret = ConfigurationManager.AppSettings["ApplicationSecret"];
-            var tenantId = ConfigurationManager.AppSettings["TenantId"];
-            string subscriptionId = ConfigurationManager.AppSettings["SubscriptionId"];
+            var config = executionContext.BuildConfiguration();
+            var clientId = config["ApplicationId"];
+            var clientSecret = config["ApplicationSecret"];
+            var tenantId = config["TenantId"];
+            string subscriptionId = config["SubscriptionId"];
             log.LogInformation($"DeleteResourcesActivity start process delete group {input.ResourcesName} ");
 
             try

@@ -3,7 +3,6 @@ using Buzz.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Configuration;
 
 namespace Buzz.Activity
 {
@@ -12,7 +11,8 @@ namespace Buzz.Activity
         private static ILogger _log;
 
         [FunctionName("ProvisionActivity")]
-        public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log)
+        public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log,
+            ExecutionContext executionContext)
         {
 
             _log = log;
@@ -23,25 +23,25 @@ namespace Buzz.Activity
                 Count = context.GetInput<Tuple<string, int, int>>().Item3
             };
             log.LogInformation($"ProvisionActivity provision {input.Name} {input.Index}");
-
-            var clientId = ConfigurationManager.AppSettings["ApplicationId"];
-            var clientSecret = ConfigurationManager.AppSettings["ApplicationSecret"];
-            var tenantId = ConfigurationManager.AppSettings["TenantId"];
-            string subscriptionId = ConfigurationManager.AppSettings["SubscriptionId"];
-            string userName = ConfigurationManager.AppSettings["UserName"];
-            string password = ConfigurationManager.AppSettings["UserPassword"];
-            var templatePath = ConfigurationManager.AppSettings["TemplateFileUri"];
-            var scriptFile = ConfigurationManager.AppSettings["ScriptFileUri"];
-            var commandToExecute = ConfigurationManager.AppSettings["CommandToExecute"];
-            string sourceContainerName = ConfigurationManager.AppSettings["SourceAppsContainerName"];
-            var newStorageLocation = $"https://{input.Name.ToLower()}{input.Index}data.blob.core.windows.net/{sourceContainerName}";
+            var config = executionContext.BuildConfiguration();
+            var clientId = config["ApplicationId"];
+            var clientSecret = config["ApplicationSecret"];
+            var tenantId = config["TenantId"];
+            string subscriptionId = config["SubscriptionId"];
+            string userName = config["UserName"];
+            string password = config["UserPassword"];
+            var templatePath = config["TemplateFileUri"];
+            var scriptFile = config["ScriptFileUri"];
+            var commandToExecute = config["CommandToExecute"];
+            string sourceContainerName = config["SourceAppsContainerName"];
+            var newStorageLocation = $"https://{input.Name.ToLower()}{input.Index}.blob.core.windows.net/{sourceContainerName}";
             //commandToExecute = commandToExecute
             //    .Replace("APPLICATIONS", newStorageLocation)
             //    .Replace("URL", url);v
             var fileUris = scriptFile;
-            var region = ConfigurationManager.AppSettings["Region"];
-            var omsKey = ConfigurationManager.AppSettings["OmsWorkspaceKey"];
-            var omsId = ConfigurationManager.AppSettings["OmsWorkspaceId"];
+            var region = config["Region"];
+            var omsKey = config["OmsWorkspaceKey"];
+            var omsId = config["OmsWorkspaceId"];
 
             var parameters =
                 Parameters.Make(
