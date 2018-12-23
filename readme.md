@@ -1,6 +1,6 @@
 # Introduction
 
-Buzz is a scaling platform allowing Azure Virtual Machine Scale Sets (VMSS) to scale beyond the limits of a single set, allowing for hyper-scale stress tests, DDoS simulators and HPC use cases.
+Buzz is a scaling platform which allows Azure Virtual Machine Scale Sets (VMSS) to scale beyond the limits of a single set and enables hyper-scale stress tests, DDoS simulators and HPC use cases.
 
 # Information
 
