@@ -31,11 +31,10 @@ namespace Buzz.Orchestrator
             await context.CreateResourceGroupActivity(input.Name);
             foreach (var task in input.Scale
                 .PartitionSum(NonZeroInt.Make(vmsinScaleSet))
-                .MakeInterleavedCalls(
-                    t =>
+                .MakeInterleavedCalls(async t =>
                     {
-                        context.CopyStoargeTask(input.Name, t.Item1);
-                        return context.ProvisionTask(input.Name, t.Item1, t.Item2);
+                        await context.CopyStoargeTask(input.Name, t.Item1);
+                        await context.ProvisionTask(input.Name, t.Item1, t.Item2);
                     },
                     t => context.WaitTask(waitTime)))
 

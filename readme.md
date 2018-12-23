@@ -1,16 +1,34 @@
 # Introduction
 
-Scaling a cluster of load-test clients (VMs) to order of 10K+ instances using Azure Virtual Machine Scale Sets (VMSS) and Durable Functions.
+Buzz is a scaling platform allowing Azure Virtual Machine Scale Sets (VMSS) to scale beyond the limits of a single set, allowing for hyper-scale stress tests, DDoS simulators and HPC use cases.
 
 # Information
 
-This example shows how to scale load test scenarios to order of 10K+ instances using a number of VMSS instances.
-It works by deploying ARM templates containing VNET, Load Balancer and VMSS for every 800 VMs (configurable). 
+Buzz orchestrates a number of Azure components to manage high scale clusters of VMs running and performing the same actions, such as generating load on an endpoint, as in the implemented scenario.
+Buzz uses Durable Functions runtime exposing the following APIs:
 
+## Create Cluster: 
 
-# Deployment
+**POST:** [FUNCTION_URL]/PostCluster?code=[YOUR FUNCTION KEY]
 
-1. create a storage
+body:
+{
+    "name": "LOAD",
+    "scale": 1000
+}
+
+## Delete Cluster: 
+
+**DELETE:** [FUNCTION_URL]/DeleteCluster?code=[YOUR FUNCTION KEY]
+
+body:
+{
+    "name": "LOAD"
+}
+
+# Deploy to Azure
+
+**1. create a storage**
 
 az group create --name buzz-rg --location westeurope
 
@@ -20,21 +38,21 @@ az storage container create --name applications --account-name buzzdata public-a
 
 az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/releases/wget-1.20-win64.zip	
 
-note name and storage key
+note the name and account key of the storage account
 
-2. register application for ARM RBAC
+**2. register application for ARM RBAC**
 
-az ad sp create-for-rbac --name "buzz-app-rbac" --role="Contribor" --scopes="/subscriptions/12931070-7cce-44a7-bd9a-36159c20f8d0"
+az ad sp create-for-rbac --name "buzz-app-rbac" --role="Contribor" --scopes="/subscriptions/[YOUR SUBSCRIPTION ID]"
 
-note app id, password and tenant id
+note the provided app id, password and tenant id
 
-3. create oms workspace
+**3. create oms workspace**
 
 https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace
 
-note workspace id and key
+note the workspace id and key
 
-4. create function
+**4. create function**
 
 az storage account create --name buzzfunctionstorage --location westeurope --resource-group buzz-rg --sku Standard_LRS
 
@@ -42,10 +60,12 @@ az functionapp create --name buzzfunctionapp --storage-account buzzfunctionstora
 
 az functionapp config appsettings set --name buzzfunctionapp  --resource-group buzz-rg --settings FUNCTIONS_EXTENSION_VERSION=~2
  
-5. deploy and configure
+**5. deploy and configure**
 
 config!!!
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
 
-6. run
+# More Resources
+
+Full code story and design considerations here.

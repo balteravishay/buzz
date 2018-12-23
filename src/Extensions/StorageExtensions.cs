@@ -11,21 +11,25 @@ namespace Buzz.Extensions
         public static async Task CopyContainerByName(this string containerName, CloudBlobClient sourceClient,
             CloudBlobClient targetClient)
         {
-            var sourceBlobs = (await sourceClient.GetContainerReference(containerName)
-                .ListBlobsSegmentedAsync(new BlobContinuationToken())).Results;
-            // Create a policy for reading the blob.
             var targetContainer = await targetClient.CreateCotanier(containerName);
-            foreach (var blob in sourceBlobs)
-            {
-                await new CloudBlockBlob(blob.Uri, sourceClient.Credentials).Copy(targetContainer);
-            }
+            var wait = (await sourceClient
+                    .GetContainerReference(containerName)
+                    .ListBlobsSegmentedAsync(new BlobContinuationToken()))
+                .Results
+                .Select(blob =>
+                    new CloudBlockBlob(blob.Uri, sourceClient.Credentials)
+                        .Copy(targetContainer));
+
+            await Task.WhenAll(wait.ToArray());
         }
-        
-        private static async Task<CloudBlobContainer> CreateCotanier(this CloudBlobClient blobClient, string containerName)
+
+        private static async Task<CloudBlobContainer> CreateCotanier(this CloudBlobClient blobClient,
+            string containerName)
         {
             var targetContainer = blobClient.GetContainerReference(containerName);
-            await targetContainer.CreateIfNotExistsAsync();
-            await targetContainer.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
+            if (await targetContainer.CreateIfNotExistsAsync())
+                await targetContainer.SetPermissionsAsync(
+                    new BlobContainerPermissions {PublicAccess = BlobContainerPublicAccessType.Blob});
             return targetContainer;
         }
 
@@ -48,17 +52,27 @@ namespace Buzz.Extensions
             }
         }
 
+
         private static async Task WaitSuccessCopy(CloudBlobContainer targetContainer, string name)
         {
             var found = false;
             while (!found)
             {
                 if ((await targetContainer.ListBlobsSegmentedAsync(name,
-                        new BlobContinuationToken())).Results.FirstOrDefault() is CloudBlob destBlob && destBlob.CopyState.Status == CopyStatus.Success)
+                        new BlobContinuationToken()))
+                    .Results
+                    .FirstOrDefault() is CloudBlob destBlob && (await  destBlob.IsCopied()))
                     found = true;
                 else
                     Thread.Sleep(1000);
             }
+        }
+
+        private static async Task<bool> IsCopied(this CloudBlob @this)
+        {
+            await @this.FetchAttributesAsync();
+            return @this.CopyState != null &&
+                   @this.CopyState.Status == CopyStatus.Success;
         }
     }
 }
