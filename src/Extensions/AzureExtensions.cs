@@ -1,7 +1,6 @@
 using System;
 using Buzz.Model;
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace Buzz.Extensions
     /// </summary>
     internal static class AzureExtensions
     {
-        private static Policy RetryPolicy = Policy
+        private static readonly Policy RetryPolicy = Policy
             .Handle<CloudException>()
             .WaitAndRetry(3, retryAttempt =>
                 TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
@@ -92,13 +91,14 @@ namespace Buzz.Extensions
         /// <param name="this"></param>
         /// <param name="resourceGroupName"></param>
         /// <param name="vnetName"></param>
+        /// <param name="log"></param>
         internal static void DeleteVnet(this IAzure @this,
             string resourceGroupName, string vnetName,
             Action<string> log) =>
             RetryPolicy.Execute((context)=>
                 @this.Networks.DeleteByResourceGroupAsync(resourceGroupName, vnetName),
                 new Dictionary<string, object>() { { "log", log } });
-        
+
         /// <summary>
         /// creates a deployment of virtual machine scale set with provided parameters json string
         /// </summary>
@@ -107,6 +107,7 @@ namespace Buzz.Extensions
         /// <param name="deploymentName"></param>
         /// <param name="templatePath"></param>
         /// <param name="parameters"></param>
+        /// <param name="log"></param>
         /// <returns></returns>
         private static void DeployTemplate(this IAzure @this,
             string resourceGroupName, string deploymentName,
@@ -125,6 +126,7 @@ namespace Buzz.Extensions
         /// <param name="this"></param>
         /// <param name="resourceGroupName"></param>
         /// <param name="vmssName"></param>
+        /// <param name="log"></param>
         internal static void DeleteScaleSet(this IAzure @this,
             string resourceGroupName, string vmssName, Action<string> log) =>
             RetryPolicy.Execute((context) => 
@@ -148,6 +150,7 @@ namespace Buzz.Extensions
         /// </summary>
         /// <param name="this"></param>
         /// <param name="resourceGroupName"></param>
+        /// <param name="log"></param>
         internal static void DeleteGroup(this IAzure @this,
             string resourceGroupName, Action<string> log) =>
             RetryPolicy.Execute((context) => @this
@@ -171,37 +174,16 @@ namespace Buzz.Extensions
             resourceGroup = null;
             return false;
         }
-
         
-        /// <summary>
-        /// gets an internal vmss vm nic by its internal ip address. returns true if success
-        /// </summary>
-        /// <param name="this"></param>
-        /// <param name="resourceGroupName"></param>
-        /// <param name="vmssName"></param>
-        /// <param name="ip"></param>
-        /// <param name="nic"></param>
-        /// <returns></returns>
-        internal static bool TryGetVmssNicByIp(this IAzure @this,
-            string resourceGroupName, string vmssName, string ip, out IVirtualMachineScaleSetNetworkInterface nic)
-        {
-            var scaleSet = @this.VirtualMachineScaleSets.GetByResourceGroup(resourceGroupName, vmssName);
-            if (scaleSet == null)
-            {
-                nic = null;
-                return false;
-            }
-            nic = scaleSet.ListNetworkInterfaces().FirstOrDefault(n => n.PrimaryPrivateIP.Equals(ip));
-            return nic != null;
-        }
-
         /// <summary>
         /// creates a vnet and deploys a template to a resource group with given parameters
         /// </summary>
         /// <param name="this"></param>
+        /// <param name="resourceGroupName"></param>
         /// <param name="parameters"></param>
         /// <param name="region"></param>
         /// <param name="templatePath"></param>
+        /// <param name="log"></param>
         internal static void DeployResourcesToGroup(this IAzure @this, string resourceGroupName,
             Parameters parameters,
             string region, string templatePath, Action<string> log)

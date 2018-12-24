@@ -29,7 +29,7 @@ namespace Buzz.Extensions
             var targetContainer = blobClient.GetContainerReference(containerName);
             if (await targetContainer.CreateIfNotExistsAsync())
                 await targetContainer.SetPermissionsAsync(
-                    new BlobContainerPermissions {PublicAccess = BlobContainerPublicAccessType.Blob});
+                    new BlobContainerPermissions {PublicAccess = BlobContainerPublicAccessType.Container});
             return targetContainer;
         }
 

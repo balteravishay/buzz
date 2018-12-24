@@ -3,6 +3,11 @@ using Buzz.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Buzz.Activity
 {
@@ -11,16 +16,17 @@ namespace Buzz.Activity
         private static ILogger _log;
 
         [FunctionName("ProvisionActivity")]
-        public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log,
+        public static async Task Run([ActivityTrigger] DurableActivityContext context, ILogger log,
             ExecutionContext executionContext)
         {
 
             _log = log;
             var input = new
             {
-                Name = context.GetInput<Tuple<string, int, int>>().Item1,
-                Index = context.GetInput<Tuple<string, int, int>>().Item2,
-                Count = context.GetInput<Tuple<string, int, int>>().Item3
+                Name = context.GetInput<Tuple<string, int, int, string>>().Item1,
+                Index = context.GetInput<Tuple<string, int, int, string>>().Item2,
+                Count = context.GetInput<Tuple<string, int, int, string>>().Item3,
+                StorageKey = context.GetInput<Tuple<string, int, int, string>>().Item4
             };
             log.LogInformation($"ProvisionActivity provision {input.Name} {input.Index}");
             var config = executionContext.BuildConfiguration();
@@ -28,26 +34,28 @@ namespace Buzz.Activity
             var clientSecret = config["ApplicationSecret"];
             var tenantId = config["TenantId"];
             string subscriptionId = config["SubscriptionId"];
-            string userName = config["UserName"];
-            string password = config["UserPassword"];
+            string userName = config["NodeUserName"];
+            string password = config["NodeUserPassword"];
             var templatePath = config["TemplateFileUri"];
             var scriptFile = config["ScriptFileUri"];
             var commandToExecute = config["CommandToExecute"];
             string sourceContainerName = config["SourceAppsContainerName"];
-            var newStorageLocation = $"https://{input.Name.ToLower()}{input.Index}.blob.core.windows.net/{sourceContainerName}";
-            //commandToExecute = commandToExecute
-            //    .Replace("APPLICATIONS", newStorageLocation)
-            //    .Replace("URL", url);v
-            var fileUris = scriptFile;
             var region = config["Region"];
             var omsKey = config["OmsWorkspaceKey"];
             var omsId = config["OmsWorkspaceId"];
+            
+           var files = (await (new CloudStorageAccount(new StorageCredentials($"{input.Name.ToLower()}{input.Index}", input.StorageKey), true)
+                   .CreateCloudBlobClient()).GetContainerReference(sourceContainerName)
+                .ListBlobsSegmentedAsync(new BlobContinuationToken())).Results;
+            
+            var fileUris = string.Join(",", files.Select(t => $"'{t.Uri.ToString()}'").Append($"'{scriptFile}'"));
+            
 
             var parameters =
                 Parameters.Make(
                     $"{input.Name}{input.Index}",
                     AddressRange.Make(input.Index).AddressRangeString,
-                    scriptFile,
+                    fileUris,
                     commandToExecute,
                     userName,
                     password,

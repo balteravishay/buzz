@@ -36,7 +36,7 @@ az storage account create --name buzzdata --resource-group buzz-rg --location we
 
 az storage container create --name applications --account-name buzzdata public-access blob
 
-az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/releases/wget-1.20-win64.zip	
+az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/1.20/64/wget.exe	
 
 note the name and account key of the storage account
 
@@ -59,10 +59,18 @@ az storage account create --name buzzfunctionstorage --location westeurope --res
 az functionapp create --name buzzfunctionapp --storage-account buzzfunctionstorage --consumption-plan-location westeurope --resource-group buzz-rg 
 
 az functionapp config appsettings set --name buzzfunctionapp  --resource-group buzz-rg --settings FUNCTIONS_EXTENSION_VERSION=~2
- 
-**5. deploy and configure**
 
-config!!!
+**5. [OPTIONAL]: deploy test function**
+
+az storage account create --name buzzfunctionteststorage --location westeurope --resource-group buzz-rg --sku Standard_LRS
+
+az functionapp create --name buzzfunctiontestapp --storage-account buzzfunctionteststorage --consumption-plan-location westeurope --resource-group buzz-rg 
+
+note the test function post url 
+
+**6. deploy and configure**
+
+TODO: add config!!!
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
 

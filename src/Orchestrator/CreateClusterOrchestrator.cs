@@ -33,8 +33,8 @@ namespace Buzz.Orchestrator
                 .PartitionSum(NonZeroInt.Make(vmsinScaleSet))
                 .MakeInterleavedCalls(async t =>
                     {
-                        await context.CopyStoargeTask(input.Name, t.Item1);
-                        await context.ProvisionTask(input.Name, t.Item1, t.Item2);
+                        var key = await context.CopyStoargeTask(input.Name, t.Item1);
+                        await context.ProvisionTask(input.Name, t.Item1, t.Item2, key);
                     },
                     t => context.WaitTask(waitTime)))
 

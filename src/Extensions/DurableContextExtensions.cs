@@ -24,8 +24,8 @@ namespace Buzz.Extensions
                 DateTime.UtcNow.Add(TimeSpan.FromMinutes(waitTime)),
                 CancellationToken.None);
         
-        public static Task ProvisionTask(this DurableOrchestrationContext @this, string name, int index, int scale) =>
-            @this.CallActivityAsync("ProvisionActivity", Tuple.Create(name, index, scale));
+        public static Task ProvisionTask(this DurableOrchestrationContext @this, string name, int index, int scale, string storageKey) =>
+            @this.CallActivityAsync("ProvisionActivity", Tuple.Create(name, index, scale, storageKey));
 
         public static Task<string[]> GetResourcesActivity(this DurableOrchestrationContext @this, string resourceGroupName) =>
             @this.CallActivityAsync<string[]>("GetResourcesActivity", resourceGroupName);
@@ -39,8 +39,8 @@ namespace Buzz.Extensions
         public static Task DeleteResourceGroupActivity(this DurableOrchestrationContext @this, string name) =>
             @this.CallActivityAsync("DeleteResourceGroupActivity", name);
 
-        public static Task CopyStoargeTask(this DurableOrchestrationContext @this, string name, int index) =>
-            @this.CallActivityAsync("DuplicateStorageActivity", Tuple.Create(name, index));
+        public static Task<string> CopyStoargeTask(this DurableOrchestrationContext @this, string name, int index) =>
+            @this.CallActivityAsync<string>("DuplicateStorageActivity", Tuple.Create(name, index));
 
 
     }

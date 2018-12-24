@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Buzz.Extensions;
 using Buzz.Model;
@@ -17,7 +18,7 @@ namespace Buzz.Activity
         private static ILogger _log;
 
         [FunctionName("DuplicateStorageActivity")]
-        public static async Task Run([ActivityTrigger] DurableActivityContext context, ILogger log,
+        public static async Task<string> Run([ActivityTrigger] DurableActivityContext context, ILogger log,
             ExecutionContext executionContext)
         {
             _log = log;
@@ -38,7 +39,7 @@ namespace Buzz.Activity
             try
             {
                 if (!AzureCredentials.Make(tenantId, clientId, clientSecret, subscriptionId)
-                    .TryGetAzure(out var azure, message => _log.LogError(message))) return;
+                    .TryGetAzure(out var azure, message => _log.LogError(message))) return string.Empty;
                 var sourceStorageAccountt = new CloudStorageAccount(new StorageCredentials(sourceStorageName, sourceStorageKey),true);
                 var targetStorage = azure.StorageAccounts.Define($"{input.Name.ToLower()}{input.Index}")
                     .WithRegion(Region.EuropeWest)
@@ -49,11 +50,13 @@ namespace Buzz.Activity
                     new StorageCredentials(targetStorage.Name, keys[0].Value));
                 var sourceCloudBlobClient = sourceStorageAccountt.CreateCloudBlobClient();
                 await sourceContainerName.CopyContainerByName(sourceCloudBlobClient, targetCloudBlobClient);
+                return targetStorage.GetKeys().FirstOrDefault().Value;
             }
             catch (Exception e)
             {
                 _log.LogError($"ProvisionActivity error processing function {e.Message}", e);
             }
+            return string.Empty;
         }
     }
 }
