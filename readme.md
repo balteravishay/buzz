@@ -38,19 +38,25 @@ az storage container create --name applications --account-name buzzdata public-a
 
 az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/1.20/64/wget.exe	
 
-note the name and account key of the storage account
+source_storage_name=[your storage name, buzzdata]
+source_storage_key=[storage account key]
+source_application_folder=[your container name, applications]
 
 **2. register application for ARM RBAC**
 
 az ad sp create-for-rbac --name "buzz-app-rbac" --role="Contribor" --scopes="/subscriptions/[YOUR SUBSCRIPTION ID]"
 
-note the provided app id, password and tenant id
+sp_app_id = [client id]
+sp_app_secret=[client password]
+tenant_id=[tenant id]
+subscription_id=[subscription id]
 
 **3. create oms workspace**
 
 https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace
 
-note the workspace id and key
+oms_workspace_id=[oms workspace id]
+oms_workspace_key=[oms workspace key]
 
 **4. create function**
 
@@ -66,11 +72,11 @@ az storage account create --name buzzfunctionteststorage --location westeurope -
 
 az functionapp create --name buzzfunctiontestapp --storage-account buzzfunctionteststorage --consumption-plan-location westeurope --resource-group buzz-rg 
 
-note the test function post url 
+url=[function url with code]
 
 **6. deploy and configure**
 
-az functionapp config appsettings set --resource-group buzz-rg --name buzzfunctionapp --settings ApplicationId=[SP Client Id] ApplicationSecret=[SP Client Password] TenantId=[Tenant Id] SubscriptionId=[Subscription Id] SourceStorageName=[Storage name] SourceStorageKey=[Storage Account Key] SourceAppsContainerName="applications" ScriptFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/install.ps1" TemplateFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/deploy.json" CommandToExecute="powershell.exe set-executionpolicy remotesigned & powershell.exe -file install.ps1 -url [Test URL]" Region=westeurope NodeUserName=azureuser NodeUserPassword=Qwerty!23456 MaxVmsInScaleSet=600 WaitTime=6 OmsWorkspaceId=[Oms Workspace Id] OmsWorkspaceKey=[OmsWorkspaceId]
+az functionapp config appsettings set --resource-group buzz-rg --name buzzfunctionapp --settings ApplicationId=$sp_app_id ApplicationSecret=$sp_app_secret TenantId=tenant_id SubscriptionId=subscription_id SourceStorageName=source_storage_name SourceStorageKey=source_storage_key SourceAppsContainerName=source_application_folder ScriptFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/install.ps1" TemplateFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/deploy.json" CommandToExecute="powershell.exe set-executionpolicy remotesigned & powershell.exe -file install.ps1 -url $url" Region=westeurope NodeUserName=azureuser NodeUserPassword=Qwerty!23456 MaxVmsInScaleSet=600 WaitTime=6 OmsWorkspaceId=$oms_workspace_id OmsWorkspaceKey=$oms_workspace_id]
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
 
