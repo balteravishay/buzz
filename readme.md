@@ -70,7 +70,7 @@ note the test function post url
 
 **6. deploy and configure**
 
-TODO: add config!!!
+az functionapp config appsettings set --resource-group buzz-rg --name buzzfunctionapp --settings ApplicationId=[SP Client Id] ApplicationSecret=[SP Client Password] TenantId=[Tenant Id] SubscriptionId=[Subscription Id] SourceStorageName=[Storage name] SourceStorageKey=[Storage Account Key] SourceAppsContainerName="applications" ScriptFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/install.ps1" TemplateFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/deploy.json" CommandToExecute="powershell.exe set-executionpolicy remotesigned & powershell.exe -file install.ps1 -url [Test URL]" Region=westeurope NodeUserName=azureuser NodeUserPassword=Qwerty!23456 MaxVmsInScaleSet=600 WaitTime=6 OmsWorkspaceId=[Oms Workspace Id] OmsWorkspaceKey=[OmsWorkspaceId]
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
 
