@@ -6,7 +6,7 @@ namespace Buzz.Model
     internal class Parameters
     {
         private Parameters(string deploymentName, string addressPrefix,
-            string scriptFileUri, string commandToExecute,
+            string[] scriptFileUri, string commandToExecute,
             string userName, string password, int count, string omsId, string omsKey)
         {
             AddressPrefix = addressPrefix;
@@ -24,7 +24,7 @@ namespace Buzz.Model
         
         public string DeploymentName { get; }
 
-        public string ScriptFileUri { get; }
+        public string[] ScriptFileUri { get; }
 
         public string CommandToExecute { get; }
 
@@ -62,7 +62,7 @@ namespace Buzz.Model
         }
 
         internal static Parameters Make(string deploymentName,
-            string addressPrefix,string scriptFileUri, string commandToExecute,
+            string addressPrefix,string[] scriptFileUri, string commandToExecute,
             string adminUserName, string adminPassword, int count, string omsId, string omsKey)
         {
             return new Parameters(deploymentName, addressPrefix, 

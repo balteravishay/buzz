@@ -48,7 +48,7 @@ namespace Buzz.Activity
                    .CreateCloudBlobClient()).GetContainerReference(sourceContainerName)
                 .ListBlobsSegmentedAsync(new BlobContinuationToken())).Results;
             
-            var fileUris = string.Join(",", files.Select(t => $"'{t.Uri.ToString()}'").Append($"'{scriptFile}'"));
+            var fileUris = files.Select(t => $"'{t.Uri.ToString()}'").Append($"'{scriptFile}'").ToArray();
             
 
             var parameters =
