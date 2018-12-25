@@ -1,3 +1,5 @@
+[![Build Status](https://abalterteam.visualstudio.com/LoadGenerator/_apis/build/status/LoadGenerator-ASP.NET-CI%20(1)?branchName=master)](https://abalterteam.visualstudio.com/LoadGenerator/_build/latest?definitionId=50?branchName=master)
+
 # Introduction
 
 Buzz is a scaling platform which allows Azure Virtual Machine Scale Sets (VMSS) to scale beyond the limits of a single set and enables hyper-scale stress tests, DDoS simulators and HPC use cases.
