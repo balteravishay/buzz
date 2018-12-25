@@ -24,7 +24,7 @@ namespace Buzz.Client
             {
                 return req.CreateResponse(HttpStatusCode.BadRequest, $"Bad input. please supply name");
             }
-            log.LogInformation($"delete cluster name: {name}");
+            log.LogInformation($"delete cluster client: {name}");
             var response = starter.StartNewAsync("DeleteCluster", name);
             return req.CreateResponse(HttpStatusCode.OK, $"started delete process id:{response.Id}");
         }        

@@ -15,6 +15,7 @@ namespace Buzz.Activity
         public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log, 
             ExecutionContext executionContext)
         {
+            // config and input
             _log = log;
             var input = new { ResourceGroupName = context.GetInput<string>() };
             var config = executionContext.BuildConfiguration();
@@ -23,18 +24,18 @@ namespace Buzz.Activity
             var tenantId = config["TenantId"];
             string subscriptionId = config["SubscriptionId"];
             var region = config["Region"];
-
-            log.LogInformation($"DeleteResourcesGroupActivity start process delete group {input.ResourceGroupName} ");
+            log.LogInformation($"create resource group activity start {input.ResourceGroupName} ");
 
             try
             {
+                // authenticate and create resource group if not exists
                 if (!AzureCredentials.Make(tenantId, clientId, clientSecret, subscriptionId)
                     .TryGetAzure(out IAzure azure, message => _log.LogError(message))) return;
                 azure.GetOrCreateResourceGroup(input.ResourceGroupName, region);
             }
             catch(Exception e)
             {
-                _log.LogError($"GetGroupsActivity error processing function {e.Message}", e);
+                _log.LogError($"create resource group activity error processing function {e.Message}", e);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Buzz.Client
             {
                 return req.CreateResponse(HttpStatusCode.BadRequest, $"Bad input. please supply name and scale > 0");
             }
-            log.LogInformation($"create cluster name: {name} scale: {scale}");
+            log.LogInformation($"post cluster client: {name} scale: {scale}");
             var response = starter.StartNewAsync("CreateCluster", new Tuple<string, int>(name, scale));
             return req.CreateResponse(HttpStatusCode.OK, $"started create process id:{response.Id}");
         }        

@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Rest.Azure;
 using Polly;
 
-[assembly: InternalsVisibleTo("LoadGenerator.Tests")]
+[assembly: InternalsVisibleTo("Buzz.Tests")]
 
 namespace Buzz.Extensions
 {
@@ -18,6 +18,9 @@ namespace Buzz.Extensions
     /// </summary>
     internal static class AzureExtensions
     {
+        /// <summary>
+        /// A standard polly policy for handing failures 
+        /// </summary>
         private static readonly Policy RetryPolicy = Policy
             .Handle<CloudException>()
             .WaitAndRetry(3, retryAttempt =>

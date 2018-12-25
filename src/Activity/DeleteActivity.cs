@@ -15,6 +15,7 @@ namespace Buzz.Activity
         public static void Run([ActivityTrigger] DurableActivityContext context, ILogger log,
             ExecutionContext executionContext)
         {
+            // config and input
             _log = log;
             var input = new
             {
@@ -26,17 +27,18 @@ namespace Buzz.Activity
             var clientSecret = config["ApplicationSecret"];
             var tenantId = config["TenantId"];
             string subscriptionId = config["SubscriptionId"];
-            log.LogInformation($"DeleteResourcesActivity start process delete group {input.ResourcesName} ");
+            log.LogInformation($"delete activity group start {input.ResourcesName} ");
 
             try
             {
+                // authenticate and delete resource group
                 if (!AzureCredentials.Make(tenantId, clientId, clientSecret, subscriptionId)
                     .TryGetAzure(out IAzure azure, message => _log.LogError(message))) return;
                 azure.DeleteResourcesInGroup(input.ResourceGroupName, input.ResourcesName, s => _log.LogWarning(s));
             }
             catch(Exception e)
             {
-                _log.LogError($"GetGroupsActivity error processing function {e.Message}", e);
+                _log.LogError($"delete activity group {input.ResourceGroupName} {e.Message}", e);
             }
         }
     }

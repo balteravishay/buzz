@@ -8,6 +8,9 @@ namespace Buzz.Model
     /// </summary>
     public class NonZeroInt
     {
+        /// <summary>
+        /// Value 
+        /// </summary>
         public int IntValue { get; }
 
         private NonZeroInt(int value)
@@ -17,6 +20,11 @@ namespace Buzz.Model
             IntValue = value;
         }
 
+        /// <summary>
+        /// Create a non zero integer. throws exception if value is zero
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static NonZeroInt Make(int value) => new NonZeroInt(value);
     }
 }

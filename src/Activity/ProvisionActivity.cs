@@ -19,7 +19,7 @@ namespace Buzz.Activity
         public static async Task Run([ActivityTrigger] DurableActivityContext context, ILogger log,
             ExecutionContext executionContext)
         {
-
+            //config and input
             _log = log;
             var input = new
             {
@@ -28,7 +28,6 @@ namespace Buzz.Activity
                 Count = context.GetInput<Tuple<string, int, int, string>>().Item3,
                 StorageKey = context.GetInput<Tuple<string, int, int, string>>().Item4
             };
-            log.LogInformation($"ProvisionActivity provision {input.Name} {input.Index}");
             var config = executionContext.BuildConfiguration();
             var clientId = config["ApplicationId"];
             var clientSecret = config["ApplicationSecret"];
@@ -43,35 +42,44 @@ namespace Buzz.Activity
             var region = config["Region"];
             var omsKey = config["OmsWorkspaceKey"];
             var omsId = config["OmsWorkspaceId"];
-            
-           var files = (await (new CloudStorageAccount(new StorageCredentials($"{input.Name.ToLower()}{input.Index}", input.StorageKey), true)
-                   .CreateCloudBlobClient()).GetContainerReference(sourceContainerName)
-                .ListBlobsSegmentedAsync(new BlobContinuationToken())).Results;
-            
-            var fileUris = files.Select(t => $"'{t.Uri.ToString()}'").Append($"'{scriptFile}'").ToArray();
-            
+            log.LogInformation($"Provision activity start {input.Name} {input.Index}");
 
-            var parameters =
-                Parameters.Make(
-                    $"{input.Name}{input.Index}",
-                    AddressRange.Make(input.Index).AddressRangeString,
-                    fileUris,
-                    commandToExecute,
-                    userName,
-                    password,
-                    input.Count,
-                    omsId,
-                    omsKey);
             try
             {
+                // get the files URIs to be downloaded to each node
+                var fileUris = (await new CloudStorageAccount(new StorageCredentials($"{input.Name.ToLower()}{input.Index}", input.StorageKey), true)
+                        .CreateCloudBlobClient()
+                        .GetContainerReference(sourceContainerName)
+                        .ListBlobsSegmentedAsync(new BlobContinuationToken()))
+                    .Results
+                    .Select(t => $"{t.Uri.ToString()}")
+                    .Append($"{scriptFile}")
+                    .ToArray();
+
+                // set deployment parameters
+                var parameters =
+                    Parameters.Make(
+                        $"{input.Name}{input.Index}",
+                        AddressRange.Make(input.Index).AddressRangeString,
+                        fileUris,
+                        commandToExecute,
+                        userName,
+                        password,
+                        input.Count,
+                        omsId,
+                        omsKey);
+
+                // authenticate
                 if (!AzureCredentials.Make(tenantId, clientId, clientSecret, subscriptionId)
                     .TryGetAzure(out var azure, message => _log.LogError(message))) return;
+
+                // deploy template
                 _log.LogInformation($"deploy template with parameters: {parameters}");
                 azure.DeployResourcesToGroup(input.Name, parameters, region, templatePath, s => _log.LogWarning(s));
             }
             catch(Exception e)
             {
-                _log.LogError($"ProvisionActivity error processing function {e.Message}", e);
+                _log.LogError($"Provision activity error {e.Message}", e);
             }
         }
     }

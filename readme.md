@@ -36,7 +36,7 @@ az storage account create --name buzzdata --resource-group buzz-rg --location we
 
 az storage container create --name applications --account-name buzzdata public-access blob
 
-az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/1.20/64/wget.exe	
+az storage blob copy start --destination-blob wget.exe --destination-container applications --account-name buzzdata --source-uri https://eternallybored.org/misc/wget/1.20/64/wget.exe
 
 source_storage_name=[your storage name, buzzdata]
 source_storage_key=[storage account key]
@@ -82,4 +82,4 @@ az functionapp deployment source config --resource-group buzz-rg --name buzzfunc
 
 # More Resources
 
-Full code story and design considerations here.
+Full code story and design considerations here: http://airheads.io/index.php/2018/12/22/to-infinity-and-beyond-or-the-definitive-guide-to-scaling-10k-vms-on-azure/

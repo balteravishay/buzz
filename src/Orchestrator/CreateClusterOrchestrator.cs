@@ -18,26 +18,24 @@ namespace Buzz.Orchestrator
         public static async Task Run([OrchestrationTrigger]DurableOrchestrationContext context, 
             ILogger log, ExecutionContext executionContext)
         {
+            //config and input
             var config = executionContext.BuildConfiguration();
-
             var vmsinScaleSet = int.Parse(config["MaxVmsInScaleSet"]);
             var waitTime = int.Parse(config["WaitTime"]);
-
             var input = new {
                 Name = context.GetInput<Tuple<string, int>>().Item1,
                 Scale = context.GetInput<Tuple<string, int>>().Item2
             }; 
             log.LogInformation($"orchestrate create cluster name {input.Name} with scale {input.Scale}");
+
+            // create resource group
             await context.CreateResourceGroupActivity(input.Name);
+            // partition to tasks of provision\wait interleaved calls.
             foreach (var task in input.Scale
                 .PartitionSum(NonZeroInt.Make(vmsinScaleSet))
-                .MakeInterleavedCalls(async t =>
-                    {
-                        var key = await context.CopyStoargeTask(input.Name, t.Item1);
-                        await context.ProvisionTask(input.Name, t.Item1, t.Item2, key);
-                    },
+                .MakeInterleavedCalls(
+                    async t =>await context.ProvisionTask(input.Name, t.Item1, t.Item2, await context.CopyStoargeTask(input.Name, t.Item1)),
                     t => context.WaitTask(waitTime)))
-
                 await task();
         }
     }

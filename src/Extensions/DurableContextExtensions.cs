@@ -8,7 +8,7 @@ using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 namespace Buzz.Extensions
 {
     /// <summary>
-    /// Calls to Dutable Function activities and timers. 
+    /// Calls to Durable Function activities and timers. 
     /// </summary>
     static class DurableContextExtensions
     {

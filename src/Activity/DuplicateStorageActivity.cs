@@ -21,6 +21,7 @@ namespace Buzz.Activity
         public static async Task<string> Run([ActivityTrigger] DurableActivityContext context, ILogger log,
             ExecutionContext executionContext)
         {
+            //config and input
             _log = log;
             var input = new
             {
@@ -35,26 +36,32 @@ namespace Buzz.Activity
             string sourceStorageName = config["SourceStorageName"];
             string sourceStorageKey = config["SourceStorageKey"];
             string sourceContainerName = config["SourceAppsContainerName"];
+            log.LogInformation($"duplicate storage activity start {input.Name} {input.Index} ");
 
             try
             {
+                // authenticate
                 if (!AzureCredentials.Make(tenantId, clientId, clientSecret, subscriptionId)
                     .TryGetAzure(out var azure, message => _log.LogError(message))) return string.Empty;
-                var sourceStorageAccountt = new CloudStorageAccount(new StorageCredentials(sourceStorageName, sourceStorageKey),true);
-                var targetStorage = azure.StorageAccounts.Define($"{input.Name.ToLower()}{input.Index}")
+                // create target storage account
+                var targetStorage = azure
+                    .StorageAccounts
+                    .Define($"{input.Name.ToLower()}{input.Index}")
                     .WithRegion(Region.EuropeWest)
                     .WithExistingResourceGroup(input.Name)
                     .Create();
-                var keys = targetStorage.GetKeys();
-                CloudBlobClient targetCloudBlobClient = new CloudBlobClient(new Uri(targetStorage.EndPoints.Primary.Blob),
-                    new StorageCredentials(targetStorage.Name, keys[0].Value));
-                var sourceCloudBlobClient = sourceStorageAccountt.CreateCloudBlobClient();
-                await sourceContainerName.CopyContainerByName(sourceCloudBlobClient, targetCloudBlobClient);
-                return targetStorage.GetKeys().FirstOrDefault().Value;
+                // copy the source blob to the target container
+                await new CloudStorageAccount(new StorageCredentials(sourceStorageName, sourceStorageKey), true)
+                    .CreateCloudBlobClient()
+                    .CopyContainerByName(sourceContainerName, 
+                        new CloudBlobClient(new Uri(targetStorage.EndPoints.Primary.Blob),
+                            new StorageCredentials(targetStorage.Name, targetStorage.GetKeys()[0].Value)));
+                // return account key for the new storage
+                return targetStorage.GetKeys().FirstOrDefault()?.Value;
             }
             catch (Exception e)
             {
-                _log.LogError($"ProvisionActivity error processing function {e.Message}", e);
+                _log.LogError($"duplicate storage activity error  {e.Message}", e);
             }
             return string.Empty;
         }

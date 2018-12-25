@@ -1,11 +1,18 @@
-using System;
-
 namespace Buzz.Model
 {
+    /// <summary>
+    /// Representing a dynamic Address Range
+    /// </summary>
     class AddressRange
     {
+        /// <summary>
+        /// Address Range
+        /// </summary>
         public string AddressRangeString { get; }
 
+        /// <summary>
+        /// Sequence Number
+        /// </summary>
         public int Id { get; }
 
         private AddressRange(int id)
@@ -14,10 +21,12 @@ namespace Buzz.Model
             Id = id;
         }
         
+        /// <summary>
+        /// Create a dynamic Address Range object
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static AddressRange Make(int id)=> 
             new AddressRange(id);
-
-        public static AddressRange MakeByInternalIp(string ip) => 
-            new AddressRange(Int32.Parse(ip.Split('.')[1]));
     }
 }
