@@ -9,7 +9,7 @@ Buzz uses Durable Functions runtime exposing the following APIs:
 
 ## Create Cluster: 
 
-**POST:** [FUNCTION_URL]/PostCluster?code=[YOUR FUNCTION KEY]
+**POST:** [FUNCTION_URL]/PostClusterClient?code=[YOUR FUNCTION KEY]
 
 body:
 {
@@ -19,7 +19,7 @@ body:
 
 ## Delete Cluster: 
 
-**DELETE:** [FUNCTION_URL]/DeleteCluster?code=[YOUR FUNCTION KEY]
+**DELETE:** [FUNCTION_URL]/DeleteClusterClient?code=[YOUR FUNCTION KEY]
 
 body:
 {
@@ -80,7 +80,7 @@ az functionapp config appsettings set --resource-group buzz-rg --name buzzfuncti
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
 
-# Run Locally
+# Deploy Locally
 
 clone the repo to your local drive and configure the provided settings.json according to the previous steps.
 
