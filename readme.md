@@ -4,7 +4,7 @@ Buzz is a scaling platform which allows Azure Virtual Machine Scale Sets (VMSS) 
 
 # Information
 
-Buzz orchestrates a number of Azure components to manage high scale clusters of VMs running and performing the same actions, such as generating load on an endpoint, as in the implemented scenario.
+Buzz orchestrates a number of Azure components to manage high scale clusters of VMs running and performing the same actions, such as generating load on an endpoint, as in the implemented scenario.  
 Buzz uses Durable Functions runtime exposing the following APIs:
 
 ## Create Cluster: 
@@ -79,6 +79,18 @@ url=[function url with code]
 az functionapp config appsettings set --resource-group buzz-rg --name buzzfunctionapp --settings ApplicationId=$sp_app_id ApplicationSecret=$sp_app_secret TenantId=tenant_id SubscriptionId=subscription_id SourceStorageName=source_storage_name SourceStorageKey=source_storage_key SourceAppsContainerName=source_application_folder ScriptFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/install.ps1" TemplateFileUri="https://raw.githubusercontent.com/balteravishay/buzz/master/scripts/deploy.json" CommandToExecute="powershell.exe set-executionpolicy remotesigned & powershell.exe -file install.ps1 -url $url" Region=westeurope NodeUserName=azureuser NodeUserPassword=Qwerty!23456 MaxVmsInScaleSet=600 WaitTime=6 OmsWorkspaceId=$oms_workspace_id OmsWorkspaceKey=$oms_workspace_id]
 
 az functionapp deployment source config --resource-group buzz-rg --name buzzfunctionapp --repo-url https://github.com/balteravishay/buzz.git
+
+# Run Locally
+
+clone the repo to your local drive and configure the provided settings.json according to the previous steps.
+
+# Modifications and Customizations
+
+The platform can run any client application with a few minor changes.
+
+* Any item in "applications" container of the data storage account will be downloaded to each VM node.
+* To change node behavior and client installations process reference your own customized powershell script from the function configuration.
+* To Change VM type or OS, reference your own customized ARM template from the function configuration.
 
 # More Resources
 
