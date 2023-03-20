@@ -280,6 +280,26 @@
                   "class": "connection hasNoOpenThreats isInScope"
                 }
               }
+            },
+            {
+              "type": "tm.Boundary",
+              "size": {
+                "width": 10,
+                "height": 10
+              },
+              "smooth": true,
+              "source": {
+                "x": 280,
+                "y": 51
+              },
+              "target": {
+                "x": 255,
+                "y": 397
+              },
+              "vertices": [],
+              "id": "906cf91b-f8bc-4046-8fdf-5ac7b9861b53",
+              "z": 8,
+              "attrs": {}
             }
           ]
         },
